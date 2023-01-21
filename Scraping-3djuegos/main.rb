@@ -40,41 +40,51 @@ def game_details_csv()
         lineas = CSV.open('Scraping-3djuegos/csv/juegos.csv', 'rb').readlines()
         juegos = lineas[1...-1]
         juego = 0
+
         juegos.each do |game|
-            link = game[1]
-            gameHTML = URI.open(link)
-            datos = gameHTML.read
-            parsed_content = Nokogiri::HTML(datos)
+            link = game[-1]
 
-            name = game[0]
-            game_details_line = "#{name};"
-            atributos = []
-            
-            parsed_content.css(".vat").css(".w100_480").css('.mar_l0_480').css(".a_n").css("dl").each do  |dl|
-                count = 0
-                legal_count = 0
-                legal_indexes = []
+            begin
+                gameHTML = URI.open(link)
+                datos = gameHTML.read
+                parsed_content = Nokogiri::HTML(datos)
+                name = game[0]
+                game_details_line = "#{name};".force_encoding("UTF-8")
+                atributos = []
 
-                dl.css("dt").each do  |dt|
-                    if (columnas.include?(dt.inner_text))
-                        legal_indexes.push(legal_count)
+                parsed_content.css(".vat").css(".w100_480").css('.mar_l0_480').css(".a_n").css("dl").each do  |dl|
+                    count = 0
+                    legal_count = 0
+                    legal_indexes = []
+
+                    dl.css("dt").each do  |dt|
+                        if (columnas.include?(dt.inner_text))
+                            legal_indexes.push(legal_count)
+                        end
+                        legal_count+=1
                     end
-                    legal_count+=1
+
+                    dl.css("dd").each do  |dd|
+                        value = dd.inner_text.force_encoding("UTF-8")
+                        if(legal_indexes.include?(count))
+                            game_details_line += "#{value};"
+                        end
+                        count +=1
+                    end
                 end
 
-                dl.css("dd").each do  |dd|
-                    value = dd.inner_text
-                    if(legal_indexes.include?(count))
-                        game_details_line += "#{value};"
-                    end
-                    count +=1
+                csv << game_details_line.split(";")
+            rescue OpenURI::HTTPError => e
+                if e.io.status[0] == "404" || e.io.status[0] == "410"
+                    puts "Pagina no disponible: #{link}"
+                else
+                    raise e
                 end
             end
-
-            csv << game_details_line.split(";")
         end
     end
 end
+
 
 # games_csv();
 game_details_csv();
