@@ -34,8 +34,8 @@ end
 
 def game_details_csv()
     CSV.open('Scraping-3djuegos/csv/detalles_juegos.csv', 'wb') do |csv|
-        columnas = [ "También para:", "Desarrollador:", "Género:", "Jugadores:", "Idiona:", "Lanzamiento:" ]
-        first_row = "nombre;plataformas-adicionale;desarrollador;generos;jugadores;duracion;idioma;lanzamiento"
+        columnas = [ "También para:", "Desarrollador:", "Género:", "Jugadores:", "Idioma:", "Lanzamiento:" ]
+        first_row = "nombre;plataformas-adicionales;desarrollador;generos;jugadores;duracion;idioma;lanzamiento;valoracion"
         csv << first_row.split(";")
         lineas = CSV.open('Scraping-3djuegos/csv/juegos.csv', 'rb').readlines()
         juegos = lineas[1...-1]
@@ -51,6 +51,7 @@ def game_details_csv()
                 name = game[0]
                 game_details_line = "#{name};".force_encoding("UTF-8")
                 atributos = []
+                values_count = 0
 
                 parsed_content.css(".vat").css(".w100_480").css('.mar_l0_480').css(".a_n").css("dl").each do  |dl|
                     count = 0
@@ -60,6 +61,7 @@ def game_details_csv()
                     dl.css("dt").each do  |dt|
                         if (columnas.include?(dt.inner_text))
                             legal_indexes.push(legal_count)
+                            values_count += 1
                         end
                         legal_count+=1
                     end
@@ -73,7 +75,17 @@ def game_details_csv()
                     end
                 end
 
-                csv << game_details_line.split(";")
+                if (values_count == 6)
+                    valoracion = parsed_content.css('#expectativas').css('.s20').inner_text
+                
+                    if (valoracion.length() < 2)
+                        valoracion = "0,0" 
+                    end
+                    game_details_line += "#{valoracion};"
+
+                    csv << game_details_line.split(";")
+                end
+
             rescue OpenURI::HTTPError => e
                 if e.io.status[0] == "404" || e.io.status[0] == "410"
                     puts "Pagina no disponible: #{link}"
