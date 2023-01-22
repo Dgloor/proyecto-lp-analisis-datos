@@ -24,8 +24,8 @@ def games_csv()
                 nombre = juego.css(".s18i").css(".col_plat_i").inner_text
                 strip_name = nombre.strip()
                 link = juego.css(".s18i").css(".col_plat_i").attr('href')
-                row = strip_name  +","+ link
-                csv << row.split(",")
+                row = strip_name  +";"+ link
+                csv << row.split(";")
             end
             page += 1 
         end
@@ -34,8 +34,8 @@ end
 
 def game_details_csv()
     CSV.open('Scraping-3djuegos/csv/detalles_juegos.csv', 'wb') do |csv|
-        columnas = [ "También para:", "Desarrollador:", "Género:", "Jugadores:", "Idioma:", "Lanzamiento:" ]
-        first_row = "nombre;plataformas-adicionales;desarrollador;generos;jugadores;duracion;idioma;lanzamiento;valoracion"
+        columnas = [ "También para:", "Desarrollador:", "Género:", "Jugadores:", "Idioma:","Lanzamiento:" ]
+        first_row = "nombre;plataformas-adicionales;desarrollador;generos;jugadores;idioma;lanzamiento;valoracion"
         csv << first_row.split(";")
         lineas = CSV.open('Scraping-3djuegos/csv/juegos.csv', 'rb').readlines()
         juegos = lineas[1...-1]
@@ -49,7 +49,12 @@ def game_details_csv()
                 datos = gameHTML.read
                 parsed_content = Nokogiri::HTML(datos)
                 name = game[0]
-                game_details_line = "#{name};".force_encoding("UTF-8")
+                if(game[1].length() < 30)
+                    name = game[0]+game[1]
+                end
+                game_details_line = "".force_encoding("UTF-8")
+                val_name = "#{name};".force_encoding("UTF-8")
+                game_details_line += val_name
                 atributos = []
                 values_count = 0
 
@@ -81,6 +86,7 @@ def game_details_csv()
                     if (valoracion.length() < 2)
                         valoracion = "0,0" 
                     end
+                    
                     game_details_line += "#{valoracion};"
 
                     csv << game_details_line.split(";")
