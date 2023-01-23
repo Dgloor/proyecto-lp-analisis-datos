@@ -6,7 +6,7 @@ require 'csv' # escribir y leer csv
 link = 'https://store.steampowered.com/search/?filter=topsellers&ignore_preferences=1'
 
 CSV.open('steamGames.csv', 'wb') do |csv|
-  csv << %w[Nombre Precio Fecha Lenguajes Desarrollador Generos Link]
+  csv << %w[Nombre Precio Fecha Lenguajes Desarrollador Generos Rating Link]
 end
 
 steamHTML = open(link)
@@ -24,6 +24,12 @@ lista_juegos.each do |game|
   title = game.css(".title").inner_text
   price = game.css('.search_price').inner_text.strip
   search_released = game.css('.search_released').inner_text
+  rating = ""
+   
+  score_text = game.css('div.search_reviewscore > span').at(0)
+  if !(score_text.nil?)
+    rating = score_text['data-tooltip-html'].split("<br>", 2).at(1).split("%", 2).at(0)
+  end
 
   parsed_game = Nokogiri::HTML(URI.open(link_game).read)
   
@@ -65,9 +71,10 @@ lista_juegos.each do |game|
   puts "Lenguajes: #{languages}"
   puts "Desarrollador: #{developers}"
   puts "Generos: #{generos}"
+  puts "Rating: #{rating}"
   puts "---"
 
   CSV.open('steamGames.csv', 'a') do |csv|
-    csv << [title, price, search_released, languages, developers, generos, link]
+    csv << [title, price, search_released, languages, developers, generos, rating, link]
   end
 end
