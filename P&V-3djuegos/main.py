@@ -17,7 +17,6 @@ def quanti_val(df):
     lower_five = 0
 
     for index, row in df.iterrows():
-        # print(row["nombre"], row["plataformas-adicionales"], row["valoracion"])
         if row["valoracion"] >= 5:
             higher_five += 1
         else:
@@ -30,6 +29,33 @@ def quanti_val(df):
     plt.barh(labels,values)
     for i, v in enumerate(values):
         plt.text(v, i, str(v),va='center', ha='left')
+    plt.show()
+
+
+
+#¿Cuáles son los 10 juegos mejor puntuados del género de Supervivencia?
+def top_ten(df):
+    df = df.sort_values("valoracion",ascending=False)
+    values = list()
+    labels = list()
+    count = 0
+    for index, row in df.iterrows():
+        
+        if count == 10:
+            break
+        
+        genre = str(row["generos"])
+
+        if not genre.lower().find("supervivencia") == -1:
+            labels.append(row["nombre"])
+            values.append(row["valoracion"])
+            count += 1
+    
+    print(labels)
+    print(values)
+    plt.bar(labels,values)
+    for i, v in enumerate(values):
+        plt.text(i - 0.25, v + 0.5, str(v))
     plt.show()
 
 # ¿Cuál es la plataforma más presente en el listado de juegos?
@@ -74,5 +100,6 @@ def plat_quanti(df):
         plt.text(i - 0.25, v + 0.5, str(v))
     plt.show()
 
-quanti_val(df)
-plat_quanti(df)
+# quanti_val(df)
+# plat_quanti(df)
+top_ten(df)
