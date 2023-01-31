@@ -31,4 +31,7 @@ def quanti_val(df):
     
     for i, v in enumerate(values):
         plt.text(v, i, str(v),va='center', ha='left')
+
     plt.show()
+
+quanti_val(df)
